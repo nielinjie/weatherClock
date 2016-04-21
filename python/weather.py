@@ -2,6 +2,7 @@ import urllib2
 import json
 from datetime import datetime,timedelta
 import pprint
+import sys
 
 class Forecast:
     def __init__(self,weathers,now):
@@ -56,7 +57,7 @@ class Weather:
 
 
 
-url = 'http://api.openweathermap.org/data/2.5/forecast?q=Chengdu,cn&mode=json&units=metric&APPID=fc79f41e5597da2194a280b4c1dcefd9'
+url = 'http://api.openweathermap.org/data/2.5/forecast?q=Chengdu,cn&mode=json&units=metric&APPID='+ sys.argv[1]
 
 content = urllib2.urlopen(url)
 data = json.load( content)
