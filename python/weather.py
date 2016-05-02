@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import urllib2
 import json
 from datetime import datetime,timedelta
@@ -18,6 +20,7 @@ class Forecast:
             return (time > now) and (time < nextMidleNight)
         def fromW(ws):
             if len(ws) == 0:
+                #TODO don't raise error when Empty. Because if late, it is Empty.
                  raise ValueError('no weather forecast found')
             wr =fromWeather(ws[0])
             for w in ws[1:]:
@@ -25,7 +28,9 @@ class Forecast:
             return wr
         #aggregate tomorrow
         allTomorrow = filter(lambda w: tomorrow(self.now, w.time) ,self.weathers)
+        # print allTomorrow
         allToday = filter(lambda w: today(self.now, w.time) ,self.weathers)
+        # print allToday
         return {'tomorrow':fromW(allTomorrow),'today':fromW(allToday)}
 
 
@@ -37,7 +42,7 @@ class WeatherResult:
         self.maxTemp = maxTemp
         self.minTemp = minTemp
     def aggregate(self,b):
-        return WeatherResult(self.codes+[b.code],max(self.maxTemp,b.temp),min(self.minTemp,b.temp))
+        return WeatherResult(self.codes+[b.code],int(round(max(self.maxTemp,b.temp))),int(round(min(self.minTemp,b.temp))))
     def warning(self):
         for c in self.codes:
             warningHeads = [2,3,5,6,9]
@@ -64,13 +69,12 @@ class Weather:
 
 
 url = 'http://api.openweathermap.org/data/2.5/forecast?q=Chengdu,cn&mode=json&units=metric&APPID='+ sys.argv[1]
-print url
-content = urllib2.urlopen(url)
+content = urllib2.urlopen(url,timeout=20)
 data = json.load( content)
 
 weathers = []
 
-for d in data['list'][0:19]:
+for d in data['list'][0:30]:
     date = datetime.fromtimestamp(d['dt'])
     weathers += [Weather(date,d['weather'][0]['id'],d['main']['temp'])]
 
@@ -78,5 +82,5 @@ forecast =  Forecast(weathers,datetime.now())
 
 
 fore =  forecast.forecast()
-print fore
-print fore['tomorrow'].warning()
+#print fore
+print fore['tomorrow'].maxTemp
